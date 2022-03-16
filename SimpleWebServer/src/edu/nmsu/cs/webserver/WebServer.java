@@ -13,23 +13,23 @@ package edu.nmsu.cs.webserver;
  * 
  * @author Jon Cook, Ph.D.
  * 
+ * The original code has been modified by Derek L. Oda for Program 1 of CS 371
+ * 
  **/
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class WebServer
-{
-	private ServerSocket	socket;
-
-	private boolean				running;
+public class WebServer {
+	private ServerSocket socket;
+    private static final int PORT_ID = 8080;
+    private boolean running;
 
 	/**
 	 * Constructor
 	 **/
-	private WebServer()
-	{
+	private WebServer() {
 		running = false;
-	}
+	} // end constructor
 
 	/**
 	 * Web server starting point. This method does not return until the server is finished, so perhaps
@@ -38,75 +38,60 @@ public class WebServer
 	 * @param port
 	 *          is the TCP port number to accept connections on
 	 **/
-	private boolean start(int port)
-	{
+	private boolean start(int port) {
 		Socket workerSocket;
 		WebWorker worker;
-		try
-		{
+		try {
 			socket = new ServerSocket(port);
-		}
-		catch (Exception e)
-		{
+		} // end try
+		catch (Exception e) {
 			System.err.println("Error binding to port " + port + ": " + e);
 			return false;
-		}
-		while (true)
-		{
-			try
-			{
+		} // end catch
+		while (true) {
+			try {
 				// wait and listen for new client connection
 				workerSocket = socket.accept();
-			}
-			catch (Exception e)
-			{
+			} // end try
+			catch (Exception e) {
 				System.err.println("No longer accepting: " + e);
 				break;
-			}
+			} // end catch
 			// have new client connection, so fire off a worker on it
 			worker = new WebWorker(workerSocket);
 			new Thread(worker).start();
-		}
+		} // end while
 		return true;
 	} // end start
 
 	/**
 	 * Does not do anything, since start() never returns.
 	 **/
-	private boolean stop()
-	{
+	private boolean stop() {
 		return true;
-	}
+	} // end stop
 
 	/**
 	 * Application main: process command line and start web server; default port number is 8080 if not
 	 * given on command line.
 	 **/
-	public static void main(String args[])
-	{
-		int port = 8080;
-		if (args.length > 1)
-		{
+	public static void main(String args[]) {
+		int port = WebServer.PORT_ID;
+		if (args.length > 1) {
 			System.err.println("Usage: java Webserver <portNumber>");
 			return;
-		}
-		else if (args.length == 1)
-		{
-			try
-			{
+		} // end if
+		else if (args.length == 1) {
+			try {
 				port = Integer.parseInt(args[0]);
-			}
-			catch (Exception e)
-			{
+			} // end try
+			catch (Exception e) {
 				System.err.println("Argument must be an int (" + e + ")");
 				return;
-			}
-		}
+			} // end catch
+		} // end elseif
 		WebServer server = new WebServer();
 		if (!server.start(port))
-		{
 			System.err.println("Execution failed!");
-		}
 	} // end main
-
 } // end class

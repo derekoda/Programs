@@ -1,0 +1,13 @@
+Derek Oda
+Program 1
+CS 371
+1/31/2022
+
+1. 4 hours
+
+2. Thought/Design: 3-4 hours
+   Programming: 3 hours
+   Debugging: 1-1.5 hours
+   TOTAL: 7.5 hours
+
+3. (4 - 7.5) / 4 * 100 = -87.5% accuracy... not good
