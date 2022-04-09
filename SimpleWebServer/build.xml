@@ -1,23 +1,26 @@
-<project name="SimpleWebServer" basedir=".">
-	<description>
-	Simple Web Server ant build file	
-	</description>
+<project name="SimpleWebServer" default="run" basedir=".">
+	<description> Simple Web Server ant build file </description>
 	
 	<property name="src" location="src"/>
 	<property name="build" location="bin"/>
+	<target name="clean">
+		<!--Delete old bin directory-->
+			<delete dir="bin"/>
+	</target>
 	
-	<target name="build">
-		<!--Create the build directory structure-->
+	<target name="build" depends="clean">
+		<!--Build directory structure-->
 		<mkdir dir="${build}"/>
-		<javac srcdir="${src}" destdir="${build}"/>
+		<javac srcdir="${src}" destdir="${bin}"/>
 	</target>
 	
-	<target name="compile" description="compile project">
+	<target name="compile" depends="build">
 		<!--Compile the project-->
-	<javac srcdir="${src}" destdir="${build}" />
+	    <javac srcdir="${src}" destdir="${bin}" />
 	</target>
 	
-	<target name="run" depends="build">
-	<java classname="edu.nmsu.cs.webserver.WebServer" classpath="${build}"/>
+	<target name="run" depends="compile">
+	    <!--Fork project into www directory and run from there-->
+		<java classname="edu.nmsu.cs.webserver.WebServer" classpath="${bin}" fork="true" dir="./www/"/>
 	</target>
 </project>

@@ -1,0 +1,6 @@
+1. 5 hours
+2. Thought/Design - 1 hr
+   Programming - 3 hrs
+   Debugging - 1 hr
+   total - 5 hrs
+3. It ended up taking me about 4.5 hours so .5 hours less than anticipated.

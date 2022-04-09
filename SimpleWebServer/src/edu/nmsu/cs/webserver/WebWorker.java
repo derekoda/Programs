@@ -25,6 +25,7 @@ package edu.nmsu.cs.webserver;
 
 import java.io.*;
 import java.net.*;
+import java.nio.file.Files;
 import java.text.*;
 import java.util.*;
 import java.time.*;
@@ -51,8 +52,9 @@ public class WebWorker implements Runnable {
 			InputStream is = socket.getInputStream();
 			OutputStream os = socket.getOutputStream();
 			File fileRequest = readHTTPRequest(is);
-			writeHTTPHeader(os, "text/html", fileRequest);
-			writeContent(os, fileRequest);
+			String fileType = getFileType(fileRequest);
+			writeHTTPHeader(os, fileType, fileRequest);
+			writeContent(os, fileType, fileRequest);
 			os.flush();
 			socket.close();
 		} // end try
@@ -118,7 +120,7 @@ public class WebWorker implements Runnable {
 	 * @param requested
 	 * 			is the File we are attempting to access
 	 **/
-	private void writeHTTPHeader(OutputStream os, String contentType, File requested) throws Exception {
+	private void writeHTTPHeader(OutputStream os, String fileType, File requested) throws Exception {
 		Date d = new Date();
 		DateFormat df = DateFormat.getDateTimeInstance();
 		df.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -136,7 +138,7 @@ public class WebWorker implements Runnable {
 		// os.write("Content-Length: 438\n".getBytes());
 		os.write("Connection: close\n".getBytes());
 		os.write("Content-Type: ".getBytes());
-		os.write(contentType.getBytes());
+		os.write(fileType.getBytes());
 		os.write("\n\n".getBytes()); // HTTP header ends with 2 newlines
 		return;
 	} // end writeHTTPHeader
@@ -150,18 +152,24 @@ public class WebWorker implements Runnable {
 	 * @param requested
 	 * 			is the File we are attempting to access
 	 **/
-	private void writeContent(OutputStream os, File requested) throws Exception {
-	    os.write("<html><head></head><body>\n".getBytes());
+	private void writeContent(OutputStream os, String fileType, File requested) throws Exception {
 		
 	    // if file not found
-	    if (requested == null && !isDefault) 
+	    if (requested == null && !isDefault) {
+	    	os.write("<html><title>404 Not Found</title><head></head><body>\n".getBytes());
 			os.write("<h3>404 Not Found</h3>\n".getBytes());
+			os.write("</body></html>\n".getBytes());
+	    }
+			
 		// if default page
-	    else if (isDefault) 
-			os.write("<h3>My web server works!</h3>\n".getBytes());
-		// else write content of requested file to page
-	    else {
-			Scanner scan = new Scanner(requested);
+	    else if (isDefault) {
+	    	os.write("<title>Welcome</title>".getBytes());
+		    os.write("<h3>My web server works!</h3>\n".getBytes());
+	    } // end else if
+		// else if text file
+	    else if (fileType.equals("text/html")){
+	    	os.write("<html><title>Welcome</title><head></head><body>\n".getBytes());
+	    	Scanner scan = new Scanner(requested);
 			
 			while (scan.hasNextLine()) {
 				
@@ -176,10 +184,39 @@ public class WebWorker implements Runnable {
 				
 				os.write(line.getBytes());
 			} // end while
-			
+			os.write("</body></html>\n".getBytes());
 			scan.close();
-		} // end else
-		os.write("</body></html>\n".getBytes());
+		} // end else if
+		// picture or gif
+	    else if (fileType.equals("image/gif") || fileType.equals("image/png") || fileType.equals("image/jpeg")) {
+			// convert image/gif to byte array for output stream
+			byte[] imageToBytes = Files.readAllBytes(requested.toPath());
+			os.write(imageToBytes);	
+		} // end elseif
 	} // end writeContent
-
+    
+	
+	/**
+	 * Check's files content type
+	 * @param request: the requested file
+	 * @return the file's content type
+	 */
+	private static String getFileType(File request) {
+		if (request == null) {
+			// return default
+			return "text/html";
+		} // end if
+		
+		String filename = request.getName();
+		
+		if (filename.endsWith(".gif")) 
+			return "image/gif";
+		else if (filename.endsWith(".jpeg") || filename.endsWith(".jpg")) 
+			return "image/jpeg";
+		else if (filename.endsWith(".png")) 
+			return "image/png";
+		else
+		// return default
+		return "text/html";
+	}
 } // end class
